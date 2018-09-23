@@ -1,23 +1,16 @@
-import pytest
-import requests
-
 import quiz
+
 import swapi
 
-_ = swapi.quiz.selector
-
-
-@pytest.fixture(scope='session')
-def execute():
-    return swapi.executor(client=requests.Session())
+_ = quiz.SELECTOR
 
 
 def test_module():
     assert issubclass(swapi.Starship, quiz.Object)
 
 
-def test_execute(execute):
-    operation = swapi.query(
+def test_execute():
+    operation = swapi.query[
         _
         .Starship(name='Millennium Falcon')[
             _
@@ -32,7 +25,11 @@ def test_execute(execute):
                 ]
             ]
         ]
-    )
+    ]
+    result = swapi.execute(operation)
+    assert result.Starship.pilots[0].homeworld.name == 'Kashyyyk'
 
-    result = execute(operation)
-    assert 'errors' not in result
+
+def test_get_schema():
+    schema = quiz.Schema.from_url(swapi.URL)
+    assert isinstance(schema, quiz.Schema)
